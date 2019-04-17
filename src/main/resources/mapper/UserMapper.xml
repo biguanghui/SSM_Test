@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper  namespace="com.bdqn.ssm.dao.UserDao">
+    <!--通过用户编码查询用户信息-->
+<select id="getLoginUser" resultType="User">
+    select * from smbms_user
+    <trim prefix="where" prefixOverrides="and|or">
+        <if test="userCode!=null and userCode!=''">
+            and userCode=#{userCode}
+        </if>
+    </trim>
+</select>
+
+
+<!--分页查询用户信息-->
+    <select id="getUserList" resultMap="userList">
+    select u.*,r.roleName as r_roleName from smbms_user u,smbms_role r
+        where u.userRole=r.id
+        <if test="userRole!=null">
+            and u.userRole=#{userRole}
+        </if>
+        <if test="userName!=null and userName!=''">
+            and u.userName like CONCAT('%',#{userName},'%')
+        </if>
+       order by u.creationDate desc limit #{pageIndex},#{pageSize}
+    </select>
+
+    <resultMap id="userList" type="User">
+        <id property="id" column="id"></id>
+        <result property="userName" column="userName"></result>
+        <result property="userCode" column="userCode"></result>
+        <result property="userPassword" column="userPassword"></result>
+        <result property="gender" column="gender"></result>
+        <result property="birthday" column="birthday"></result>
+        <result property="address" column="address"></result>
+        <result property="phone" column="phone"></result>
+        <result property="userRole" column="userRole"></result>
+        <result property="createdBy" column="createdBy"></result>
+
+        <association property="role" javaType="Role">
+        <id property="id" column="id"></id>
+        <result property="roleName" column="r_roleName"></result>
+    </association>
+    </resultMap>
+
+    <!--通过用户名与角色id统计总记录数-->
+      <select id="getUserCount" resultType="int">
+        select count(1) from smbms_user u,smbms_role r where u.userRole=r.id
+
+            <if test="userRole!=null">
+              and u.userRole=#{userRole}
+            </if>
+
+            <if test="userName!=null and userName!=''">
+            and u.userName like CONCAT('%',#{userName},'%')
+            </if>
+
+
+    </select>
+
+
+    <!--添加用户信息-->
+    <insert id="add" parameterType="User">
+        insert into smbms_user
+        (userCode,userName,userPassword,gender,birthday,phone,address,userRole,createdBy,creationDate,idPicPath,workPicPath)
+        values(#{userCode},#{userName},#{userPassword},#{gender},#{birthday},#{phone},#{address},
+        #{userRole},#{createdBy},#{creationDate},#{idPicPath},#{workPicPath})
+    </insert>
+
+    <!--通过用户名查询Id-->
+
+    <select id="getUserById" resultMap="userList2">
+        select u.*,r.roleName as r_roleName from smbms_user u,smbms_role r where u.id=#{userId} and u.userRole=r.id
+    </select>
+    <resultMap id="userList2" type="User">
+        <id property="id" column="id"></id>
+        <result property="userName" column="userName"></result>
+        <result property="userCode" column="userCode"></result>
+        <result property="userPassword" column="userPassword"></result>
+        <result property="gender" column="gender"></result>
+        <result property="birthday" column="birthday"></result>
+        <result property="address" column="address"></result>
+        <result property="phone" column="phone"></result>
+        <result property="userRole" column="userRole"></result>
+        <result property="createdBy" column="createdBy"></result>
+
+        <result property="userRoleName" column="r_roleName"></result>
+    </resultMap>
+
+</mapper>
